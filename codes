@@ -1,0 +1,57 @@
+from keras.applications.imagenet_utils import decode_predictions
+from keras.applications import xception
+
+
+import numpy as np
+model = xception.Xception(weights='imagenet')
+from keras.preprocessing import image
+from keras.applications.xception import preprocess_input
+import numpy as np
+from matplotlib import pyplot as plt
+from cv2 import *
+from gtts import gTTS 
+
+from translate import Translator
+from pygame import mixer
+model = xception.Xception(weights='imagenet')
+for i in range(1000):
+    cam = VideoCapture(0)   # 0 -> index of camera
+    s, img = cam.read()
+   # cv2.imshow('image',img)
+    if s:    # frame captured without any errors.
+       imwrite("filename.jpg",img)     
+       
+    img_path = 'filename.jpg'
+    
+    img = image.load_img(img_path, target_size=(299,299))
+    x = image.img_to_array(img)
+    x = np.expand_dims(x, axis=0)
+    x = preprocess_input(x)
+    predict = model.predict(x)
+    plt.figure(i)
+    plt.imshow(img)
+    plt.show()
+    
+    if decode_predictions (predict)[0][0][2] >= 0.3 :
+        mytext = decode_predictions(predict)[0][0][1]
+        translator= Translator(to_lang="tr")
+        mytext = translator.translate(mytext)
+        #print(decode_predictions(predict)[0])
+        print(mytext)
+        if decode_predictions (predict)[0][0][2] < 0.6 and decode_predictions (predict)[0][0][2] >= 0.4 and decode_predictions (predict)[0][0][2] < 0.6 :
+            mytext = str ("galiba bu bir " + mytext)
+            
+        if decode_predictions (predict)[0][0][2] < 0.6 and decode_predictions (predict)[0][0][2] >= 0.2 and decode_predictions (predict)[0][0][2] < 0.4 :
+            mytext = str ("Bu bir " + mytext + "olabilir")
+    
+            
+        language = 'tr'
+        
+        tts = gTTS(text=mytext, lang = 'tr', slow=False)
+        file1 = str("" + str(i) + ".mp3")
+        tts.save(file1) 
+        print(file1)
+       
+        mixer.init()
+        mixer.music.load(file1)
+        mixer.music.play()
